@@ -1,16 +1,32 @@
+import { io } from "socket.io-client";
 import React from "react";
 import "./chat.css";
 import EmojiPicker from "emoji-picker-react";
 import { useState, useRef, useEffect } from "react";
+import Message from "./Message/Message";
 
 const Chat = () => {
   const [emojiPickerOpen, setEmojiPickerOpen] = useState(false);
   const [text, setText] = useState("");
+  const [messages, setMessages] = useState([]);
 
   const handleEmoji = (e) => {
     setText((prev) => prev + e.emoji);
     setEmojiPickerOpen(false);
   };
+
+  const socket = io("http://localhost:8000");
+
+  const handleSubmitMessage = (e) => {
+    e.preventDefault();
+    if (text.trim()) {
+      socket.emit("MessageFromClient", text); // Send the text state
+      setText(""); // Clear the input field
+    }
+  };
+  socket.on("MessageToAllClients", (data) => {
+    setMessages([...messages, data]);
+  });
 
   const endRef = useRef();
   useEffect(() => {
@@ -34,87 +50,13 @@ const Chat = () => {
         </div>
       </div>
       <div className="center">
-        <div className="message">
-          <img src="./avatar.png" alt="" />
-          <div className="texts">
-            <p>
-              Lorem ipsum dolor, sit amet consectetur adipisicing elit. Quo
-              ducimus fugit delectus in libero perspiciatis obcaecati? Excepturi
-              quibusdam mollitia perferendis! Hic mollitia perspiciatis cumque
-              ut voluptatibus temporibus, suscipit ipsa deleniti!
-            </p>
-            <span>1 min ago</span>
-          </div>
-        </div>
-        <div className="message">
-          <img src="./avatar.png" alt="" />
-          <div className="texts">
-            <p>
-              Lorem ipsum dolor, sit amet consectetur adipisicing elit. Quo
-              ducimus fugit delectus in libero perspiciatis obcaecati? Excepturi
-              quibusdam mollitia perferendis! Hic mollitia perspiciatis cumque
-              ut voluptatibus temporibus, suscipit ipsa deleniti!
-            </p>
-            <span>1 min ago</span>
-          </div>
-        </div>
-        <div className="message own">
-          <div className="texts">
-            <p>
-              Lorem ipsum dolor, sit amet consectetur adipisicing elit. Quo
-              ducimus fugit delectus in libero perspiciatis obcaecati? Excepturi
-              quibusdam mollitia perferendis! Hic mollitia perspiciatis cumque
-              ut voluptatibus temporibus, suscipit ipsa deleniti!
-            </p>
-            <span>1 min ago</span>
-          </div>
-        </div>
-        <div className="message">
-          <img src="./avatar.png" alt="" />
-          <div className="texts">
-            <p>
-              Lorem ipsum dolor, sit amet consectetur adipisicing elit. Quo
-              ducimus fugit delectus in libero perspiciatis obcaecati? Excepturi
-              quibusdam mollitia perferendis! Hic mollitia perspiciatis cumque
-              ut voluptatibus temporibus, suscipit ipsa deleniti!
-            </p>
-            <span>1 min ago</span>
-          </div>
-        </div>
-        <div className="message own">
-          <div className="texts">
-            <p>
-              Lorem ipsum dolor, sit amet consectetur adipisicing elit. Quo
-              ducimus fugit delectus in libero perspiciatis obcaecati? Excepturi
-              quibusdam mollitia perferendis! Hic mollitia perspiciatis cumque
-              ut voluptatibus temporibus, suscipit ipsa deleniti!
-            </p>
-            <span>1 min ago</span>
-          </div>
-        </div>
-        <div className="message">
-          <img src="./avatar.png" alt="" />
-          <div className="texts">
-            <p>
-              Lorem ipsum dolor, sit amet consectetur adipisicing elit. Quo
-              ducimus fugit delectus in libero perspiciatis obcaecati? Excepturi
-              quibusdam mollitia perferendis! Hic mollitia perspiciatis cumque
-              ut voluptatibus temporibus, suscipit ipsa deleniti!
-            </p>
-            <span>1 min ago</span>
-          </div>
-        </div>
-        <div className="message own">
-          <div className="texts">
-            <p>
-              Lorem ipsum dolor, sit amet consectetur adipisicing elit. Quo
-              ducimus fugit delectus in libero perspiciatis obcaecati? Excepturi
-              quibusdam mollitia perferendis! Hic mollitia perspiciatis cumque
-              ut voluptatibus temporibus, suscipit ipsa deleniti!
-            </p>
-            <span>1 min ago</span>
-          </div>
-        </div>
+        {messages.map((message, index) => (
+          <Message
+            data={message}
+            own={false}
+            key={index} // Use index as the key for now
+          />
+        ))}
         <div ref={endRef}></div>
       </div>
       <div className="bottom">
@@ -139,7 +81,9 @@ const Chat = () => {
             <EmojiPicker open={emojiPickerOpen} onEmojiClick={handleEmoji} />
           </div>
         </div>
-        <button className="sendButton">Send</button>
+        <button className="sendButton" onClick={handleSubmitMessage}>
+          Send
+        </button>
       </div>
     </div>
   );
