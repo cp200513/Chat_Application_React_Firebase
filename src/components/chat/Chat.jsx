@@ -20,8 +20,8 @@ const Chat = () => {
   const handleSubmitMessage = (e) => {
     e.preventDefault();
     if (text.trim()) {
-      socket.emit("MessageFromClient", text); // Send the text state
-      setText(""); // Clear the input field
+      socket.emit("MessageFromClient", text);
+      setText("");
     }
   };
   socket.on("MessageToAllClients", (data) => {
